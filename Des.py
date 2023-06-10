@@ -117,7 +117,7 @@ initial_perm = [58, 50, 42, 34, 26, 18, 10, 2,
                 63, 55, 47, 39, 31, 23, 15, 7]
 
 # Expansion P-box Table
-exp_d = [32, 1, 2, 3, 4, 5, 4, 5,
+exp_p = [32, 1, 2, 3, 4, 5, 4, 5,
          6, 7, 8, 9, 8, 9, 10, 11,
          12, 13, 12, 13, 14, 15, 16, 17,
          16, 17, 18, 19, 20, 21, 20, 21,
@@ -125,14 +125,14 @@ exp_d = [32, 1, 2, 3, 4, 5, 4, 5,
          28, 29, 28, 29, 30, 31, 32, 1]
 
 # Straight P-box Table
-per = [16, 7, 20, 21,
-       29, 12, 28, 17,
-       1, 15, 23, 26,
-       5, 18, 31, 10,
-       2, 8, 24, 14,
-       32, 27, 3, 9,
-       19, 13, 30, 6,
-       22, 11, 4, 25]
+str_p = [16, 7, 20, 21,
+         29, 12, 28, 17,
+         1, 15, 23, 26,
+         5, 18, 31, 10,
+         2, 8, 24, 14,
+         32, 27, 3, 9,
+         19, 13, 30, 6,
+         22, 11, 4, 25]
 
 # S-box Table
 sbox = [[[14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7],
@@ -222,8 +222,8 @@ def encrypt(pt, rkb, rk):
     # Splitting
     left = pt[0:32]
     right = pt[32:64]
-    #  Expansion D-box: Expanding the 32 bits data into 48 bits
-    right_expanded = permute(right, exp_d, 48)
+    #  Expansion P-box: Expanding the 32 bits data into 48 bits
+    right_expanded = permute(right, exp_p, 48)
 
     # XOR RoundKey[i] and right_expanded
     xor_x = xor(right_expanded, rkb[0])
@@ -237,8 +237,8 @@ def encrypt(pt, rkb, rk):
         val = sbox[j][row][col]
         sbox_str = sbox_str + dec2bin(val)
 
-    # Straight D-box: After substituting rearranging the bits
-    sbox_str = permute(sbox_str, per, 32)
+    # Straight P-box: After substituting rearranging the bits
+    sbox_str = permute(sbox_str, str_p, 32)
 
     # XOR left and sbox_str
     result = xor(left, sbox_str)
