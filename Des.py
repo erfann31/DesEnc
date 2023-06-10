@@ -321,7 +321,7 @@ print("Encryption:\n--------------------")
 cipher_text = ""
 for str in pts:
     cipher_text += bin2hex(encrypt(str, rkb, rk))
-print("Final Cipher Text : ", cipher_text + '\n\n\n')
+print("Final Cipher Text : ", cipher_text + '\n\n')
 
 print("Decryption:\n--------------------")
 decrypted_text = ""
