@@ -201,7 +201,7 @@ def encrypt(pt, rkb, rk):
     right_expanded = permute(right, exp_p, 48)
 
     # XOR RoundKey[i] and right_expanded
-    xor_x = xor(right_expanded, rkb[i])
+    xor_x = xor(right_expanded, rkb[1])
 
     # S-boxex: substituting the value from s-box table by calculating row and column
     sbox_str = ""
@@ -218,7 +218,7 @@ def encrypt(pt, rkb, rk):
     result = xor(left, sbox_str)
     left = result
 
-    print("Round 1 ", bin2hex(left), " ", bin2hex(right), " ", rk[i])
+    print("Round 1 ", bin2hex(left), " ", bin2hex(right), " ", rk[1])
 
     # Combination
     combine = left + right
@@ -314,3 +314,55 @@ cipher_text = ""
 for str in pts:
     cipher_text += bin2hex(encrypt(str, binRoundKeys, hexRoundKeys))
 print("\nFinal Cipher Text : ", cipher_text)
+
+
+def decrypt(ct, rkb, rk):
+    print("Cipher Text : ", ct)
+    ct = hex2bin(ct)
+
+    # Initial Permutation
+    ct = permute(ct, initial_perm, 64)
+    print("After initial permutation:", bin2hex(ct))
+
+    # Splitting
+    left = ct[0:32]
+    right = ct[32:64]
+
+    # Expansion P-box: Expanding the 32 bits data into 48 bits
+    right_expanded = permute(right, exp_p, 48)
+
+    # XOR RoundKey[15] and right_expanded
+    xor_x = xor(right_expanded, rkb[1])
+
+    # S-boxes: substituting the value from s-box table by calculating row and column
+    sbox_str = ""
+    for j in range(0, 8):
+        row = bin2dec(int(xor_x[j * 6] + xor_x[j * 6 + 5]))
+        col = bin2dec(int(xor_x[j * 6 + 1] + xor_x[j * 6 + 2] + xor_x[j * 6 + 3] + xor_x[j * 6 + 4]))
+        val = sbox[j][row][col]
+        sbox_str = sbox_str + dec2bin(val)
+
+    # Straight P-box: After substituting rearranging the bits
+    sbox_str = permute(sbox_str, per, 32)
+
+    # XOR left and sbox_str
+    result = xor(left, sbox_str)
+    left = result
+
+    print("Round 1 ", bin2hex(left), " ", bin2hex(right), " ", rk[1])
+
+    # Combination
+    combine = left + right
+
+    # Final permutation: final rearranging of bits to get plain text
+    plain_text = permute(combine, final_perm, 64)
+    print("Plain Text : ", bin2hex(plain_text) + "\n--------------------")
+    return plain_text
+
+
+print("Decryption:\n--------------------")
+decrypted_text = ""
+for ct in split_text(cipher_text):
+    decrypted_text += bin2hex(decrypt(ct, binRoundKeys, hexRoundKeys))
+
+print("\nFinal Decrypted Text : ", decrypted_text)
