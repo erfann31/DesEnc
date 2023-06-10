@@ -48,26 +48,25 @@ def bin2hex(s):
         ch = ch + s[i + 2]
         ch = ch + s[i + 3]
         hex = hex + mp[ch]
-
     return hex
 
 
 # Binary to decimal conversion
 def bin2dec(binary):
     binary1 = binary
-    decimal, power, n = 0, 0, 0
-    while binary != 0:
+    decimal, i, n = 0, 0, 0
+    while (binary != 0):
         dec = binary % 10
-        decimal = decimal + dec * pow(2, power)
+        decimal = decimal + dec * pow(2, i)
         binary = binary // 10
-        power += 1
+        i += 1
     return decimal
 
 
 # Decimal to binary conversion
 def dec2bin(num):
     res = bin(num).replace("0b", "")
-    if len(res) % 4 != 0:
+    if (len(res) % 4 != 0):
         div = len(res) / 4
         div = int(div)
         counter = (4 * (div + 1)) - len(res)
@@ -96,7 +95,7 @@ def shift_left(k, nth_shifts):
     return k
 
 
-# calculating xow of two strings of binary number a and b
+# calculating xor of two strings of binary number a and b
 def xor(a, b):
     ans = ""
     for i in range(len(a)):
@@ -118,7 +117,7 @@ initial_perm = [58, 50, 42, 34, 26, 18, 10, 2,
                 63, 55, 47, 39, 31, 23, 15, 7]
 
 # Expansion P-box Table
-exp_p = [32, 1, 2, 3, 4, 5, 4, 5,
+exp_d = [32, 1, 2, 3, 4, 5, 4, 5,
          6, 7, 8, 9, 8, 9, 10, 11,
          12, 13, 12, 13, 14, 15, 16, 17,
          16, 17, 18, 19, 20, 21, 20, 21,
@@ -175,8 +174,9 @@ sbox = [[[14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7],
          [1, 15, 13, 8, 10, 3, 7, 4, 12, 5, 6, 11, 0, 14, 9, 2],
          [7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8],
          [2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11]]]
+
 # Final Permutation Table
-final_perm = [8, 40, 48, 16, 56, 24, 64, 32,
+final_perm = [40, 8, 48, 16, 56, 24, 64, 32,
               39, 7, 47, 15, 55, 23, 63, 31,
               38, 6, 46, 14, 54, 22, 62, 30,
               37, 5, 45, 13, 53, 21, 61, 29,
@@ -184,34 +184,6 @@ final_perm = [8, 40, 48, 16, 56, 24, 64, 32,
               35, 3, 43, 11, 51, 19, 59, 27,
               34, 2, 42, 10, 50, 18, 58, 26,
               33, 1, 41, 9, 49, 17, 57, 25]
-
-
-def text_to_hex(text):
-    # Convert the text to bytes
-    text_bytes = text.encode('utf-8')
-
-    # Convert the bytes to hexadecimal
-    hex_string = text_bytes.hex()
-    return hex_string
-
-
-def hex_to_ascii(hex_str):
-    ascii_str = ""
-    for i in range(0, len(hex_str), 2):
-        ascii_str += chr(int(hex_str[i:i + 2], 16))
-    return ascii_str
-
-
-def pad_text(input):
-    padding_length = 8 - (len(input) % 8)
-    padding = chr(padding_length) * padding_length
-    return input + padding
-
-
-def split_text(text):
-    chunks = [text[i:i + 16] for i in range(0, len(text), 16)]
-    return chunks
-
 
 # --parity bit drop table
 keyp = [57, 49, 41, 33, 25, 17, 9,
@@ -241,18 +213,17 @@ key_comp = [14, 17, 11, 24, 1, 5,
 
 
 def encrypt(pt, rkb, rk):
-    print("Plain Text : ", pt)
     pt = hex2bin(pt)
 
     # Initial Permutation
     pt = permute(pt, initial_perm, 64)
-    print("After initial permutation:", bin2hex(pt))
+    print("After initial permutation", bin2hex(pt))
 
     # Splitting
     left = pt[0:32]
     right = pt[32:64]
-    #  Expansion P-box: Expanding the 32 bits data into 48 bits
-    right_expanded = permute(right, exp_p, 48)
+    #  Expansion D-box: Expanding the 32 bits data into 48 bits
+    right_expanded = permute(right, exp_d, 48)
 
     # XOR RoundKey[i] and right_expanded
     xor_x = xor(right_expanded, rkb[0])
@@ -261,94 +232,42 @@ def encrypt(pt, rkb, rk):
     sbox_str = ""
     for j in range(0, 8):
         row = bin2dec(int(xor_x[j * 6] + xor_x[j * 6 + 5]))
-        col = bin2dec(int(xor_x[j * 6 + 1] + xor_x[j * 6 + 2] + xor_x[j * 6 + 3] + xor_x[j * 6 + 4]))
+        col = bin2dec(
+            int(xor_x[j * 6 + 1] + xor_x[j * 6 + 2] + xor_x[j * 6 + 3] + xor_x[j * 6 + 4]))
         val = sbox[j][row][col]
         sbox_str = sbox_str + dec2bin(val)
 
-    # Straight P-box: After substituting rearranging the bits
+    # Straight D-box: After substituting rearranging the bits
     sbox_str = permute(sbox_str, per, 32)
 
     # XOR left and sbox_str
     result = xor(left, sbox_str)
     left = result
-
-    print("Round 1 ", bin2hex(left), " ", bin2hex(right), " ", rk[1])
+    print("Round 1", bin2hex(left),
+          " ", bin2hex(right), " ", rk[1] + '\n--------------------')
 
     # Combination
     combine = left + right
 
     # Final permutation: final rearranging of bits to get cipher text
     cipher_text = permute(combine, final_perm, 64)
-    print("Cipher Text : ", bin2hex(cipher_text) + "\n--------------------")
     return cipher_text
 
 
-def decrypt(ct, rkb, rk):
-    print("Cipher Text : ", ct)
-    ct = hex2bin(ct)
-
-    # Initial Permutation
-    ct = permute(ct, initial_perm, 64)
-    print("After initial permutation:", bin2hex(ct))
-
-    # Splitting
-    left = ct[0:32]
-    right = ct[32:64]
-
-    # Expansion P-box: Expanding the 32 bits data into 48 bits
-    right_expanded = permute(right, exp_p, 48)
-
-    # XOR RoundKey[0] and right_expanded
-    xor_x = xor(right_expanded, rkb[0])
-
-    # S-boxes: substituting the value from s-box table by calculating row and column
-    sbox_str = ""
-    for j in range(0, 8):
-        row = bin2dec(int(xor_x[j * 6] + xor_x[j * 6 + 5]))
-        col = bin2dec(int(xor_x[j * 6 + 1] + xor_x[j * 6 + 2] + xor_x[j * 6 + 3] + xor_x[j * 6 + 4]))
-        val = sbox[j][row][col]
-        sbox_str = sbox_str + dec2bin(val)
-
-    # Straight P-box: After substituting rearranging the bits
-    sbox_str = permute(sbox_str, per, 32)
-
-    # XOR left and sbox_str
-    result = xor(left, sbox_str)
-    left = result
-
-    print("Round 1 ", bin2hex(left), " ", bin2hex(right), " ", rk[0])
-
-    # Combination
-    combine = left + right
-
-    # Final permutation: final rearranging of bits to get plain text
-    plain_text = permute(combine, final_perm, 64)
-    print("Plain Text : ", bin2hex(plain_text) + "\n--------------------")
-    return plain_text
-
-
-text = input("Enter some text: ")
-pt1 = pad_text(text)
-pt = text_to_hex(pt1).upper()
-# pt = ""
-print("Initial Plain Text : ", pt)
-pts = split_text(pt)
 key = "4355262724562343"
 
 # Key generation
 # --hex to binary
 key = hex2bin(key)
+
 # getting 56 bit key from 64 bit using the parity bits
 key = permute(key, keyp, 56)
-
 # Splitting
-left = key[0:28]  # rkb for binaryRoundKeys in binary
-right = key[28:56]  # rk for hexRoundKeys in hexadecimal
+left = key[0:28]  # rkb for RoundKeys in binary
+right = key[28:56]  # rk for RoundKeys in hexadecimal
 
-binRoundKeys_enc = []
-hexRoundKeys_enc = []
-binRoundKeys_dec = []
-hexRoundKeys_dec = []
+rkb = []
+rk = []
 for i in range(0, 16):
     # Shifting the bits by nth shifts by checking from shift table
     left = shift_left(left, shift_table[i])
@@ -360,22 +279,53 @@ for i in range(0, 16):
     # Compression of key from 56 to 48 bits
     round_key = permute(combine_str, key_comp, 48)
 
-    binRoundKeys_enc.append(round_key)
-    hexRoundKeys_enc.append(bin2hex(round_key))
+    rkb.append(round_key)
+    rk.append(bin2hex(round_key))
 
-# reverse the order of the round keys for decryption
-binRoundKeys_dec = binRoundKeys_enc[::-1]
-hexRoundKeys_dec = hexRoundKeys_enc[::-1]
+
+def text_to_hex(text):
+    # Convert the text to bytes
+    text_bytes = text.encode('utf-8')
+
+    # Convert the bytes to hexadecimal
+    hex_string = text_bytes.hex()
+    return hex_string
+
+
+def hex_to_ascii(hex_str):
+    ascii_str = ""
+    for i in range(0, len(hex_str), 2):
+        ascii_str += chr(int(hex_str[i:i + 2], 16))
+    return ascii_str
+
+
+def pad_text(input):
+    padding_length = 8 - (len(input) % 8)
+    padding = chr(padding_length) * padding_length
+    return input + padding
+
+
+def split_text(text):
+    chunks = [text[i:i + 16] for i in range(0, len(text), 16)]
+    return chunks
+
+
+text = input("Enter some text: ")
+pt1 = pad_text(text)
+pt = text_to_hex(pt1).upper()
+# pt = ""
+print("Initial Plain Text : ", pt)
+pts = split_text(pt)
 
 print("Encryption:\n--------------------")
 cipher_text = ""
 for str in pts:
-    cipher_text += bin2hex(encrypt(str, binRoundKeys_enc, hexRoundKeys_enc))
-print("\nFinal Cipher Text : ", cipher_text)
+    cipher_text += bin2hex(encrypt(str, rkb, rk))
+print("Final Cipher Text : ", cipher_text + '\n\n\n')
 
 print("Decryption:\n--------------------")
 decrypted_text = ""
 for ct in split_text(cipher_text):
-    decrypted_text += hex_to_ascii(bin2hex(decrypt(ct, binRoundKeys_enc, hexRoundKeys_enc)))
+    decrypted_text += bin2hex(encrypt(ct, rkb, rk))
 
-print("\nFinal Decrypted Text : ", decrypted_text)
+print("Final Decrypted Text : ", decrypted_text + '\nFinal Plain Text : ', hex_to_ascii(decrypted_text))
