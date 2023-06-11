@@ -75,14 +75,6 @@ def dec2bin(num):
     return res
 
 
-# Permute function to rearrange the bits
-def permute(k, arr, n):
-    permutation = ""
-    for i in range(0, n):
-        permutation = permutation + k[arr[i] - 1]
-    return permutation
-
-
 # shifting the bits towards left by nth shifts
 def shift_left(k, nth_shifts):
     s = ""
@@ -104,6 +96,44 @@ def xor(a, b):
         else:
             ans = ans + "1"
     return ans
+
+
+def text_to_hex(text):
+    # Convert the text to bytes
+    text_bytes = text.encode('utf-8')
+
+    # Convert the bytes to hexadecimal
+    hex_string = text_bytes.hex()
+    return hex_string
+
+
+def hex_to_ascii(hex_str):
+    ascii_str = ""
+    for i in range(0, len(hex_str), 2):
+        ascii_str += chr(int(hex_str[i:i + 2], 16))
+    return ascii_str
+
+
+def pad_text(input):
+    padding_length = 8 - (len(input) % 8)
+    padding = chr(padding_length) * padding_length
+    return input + padding
+
+
+def split_text(text):
+    chunks = [text[i:i + 16] for i in range(0, len(text), 16)]
+    return chunks
+
+
+# Permute function to rearrange the bits
+def permute(k, arr, n):
+    # print("0\n"+k)
+    # print(arr)
+    permutation = ""
+    for i in range(0, n):
+        permutation = permutation + k[arr[i] - 1]
+    # print(permutation)
+    return permutation
 
 
 # Table of Position of 64 bits at initial level: Initial Permutation Table
@@ -281,34 +311,6 @@ for i in range(0, 16):
 
     rkb.append(round_key)
     rk.append(bin2hex(round_key))
-
-
-def text_to_hex(text):
-    # Convert the text to bytes
-    text_bytes = text.encode('utf-8')
-
-    # Convert the bytes to hexadecimal
-    hex_string = text_bytes.hex()
-    return hex_string
-
-
-def hex_to_ascii(hex_str):
-    ascii_str = ""
-    for i in range(0, len(hex_str), 2):
-        ascii_str += chr(int(hex_str[i:i + 2], 16))
-    return ascii_str
-
-
-def pad_text(input):
-    padding_length = 8 - (len(input) % 8)
-    padding = chr(padding_length) * padding_length
-    return input + padding
-
-
-def split_text(text):
-    chunks = [text[i:i + 16] for i in range(0, len(text), 16)]
-    return chunks
-
 
 text = input("Enter some text: ")
 pt1 = pad_text(text)
