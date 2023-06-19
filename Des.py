@@ -274,7 +274,7 @@ def encrypt(pt, rkb, rk):
     result = xor(left, sbox_str)
     left = result
     print("Round 1", bin2hex(left),
-          " ", bin2hex(right), " ", rk[1] + '\n--------------------')
+          " ", bin2hex(right), " ", rk[0] + '\n--------------------')
 
     # Combination
     combine = left + right
