@@ -121,8 +121,7 @@ def pad_text(input):
 
 
 def split_text(text):
-    chunks = [text[i:i + 16] for i in range(0, len(text), 16)]
-    return chunks
+    return [text[i:i + 16] for i in range(0, len(text), 16)]
 
 
 # Permute function to rearrange the bits
@@ -281,9 +280,6 @@ def encrypt(pt, rkb):
     return cipher_text
 
 
-
-
-
 key = "4355262724562343"
 
 # Key Generation------------------------
@@ -315,8 +311,9 @@ rk.append(bin2hex(round_key))
 
 
 cipher_text = input()
-decrypted_text = ""
-for ct in split_text(cipher_text):
-    decrypted_text += bin2hex(encrypt(ct, rkb))
+text = ""
+for i in range(0, 3):
+    text += hex_to_ascii(bin2hex(encrypt(split_text(cipher_text)[i], rkb)))
 
-print(hex_to_ascii(decrypted_text))
+print(text)
+# print(len(text))
