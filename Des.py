@@ -247,7 +247,6 @@ def encrypt(pt, rkb, rk):
 
     # Initial Permutation
     pt = permute(pt, initial_perm, 64)
-    print("After initial permutation", bin2hex(pt))
 
     # Splitting
     left = pt[0:32]
@@ -273,8 +272,6 @@ def encrypt(pt, rkb, rk):
     # XOR left and sbox_str
     result = xor(left, sbox_str)
     left = result
-    print("Round 1", bin2hex(left),
-          " ", bin2hex(right), " ", rk[0] + '\n--------------------')
 
     # Combination
     combine = left + right
@@ -286,31 +283,33 @@ def encrypt(pt, rkb, rk):
 
 key = "4355262724562343"
 
-# Key generation
+# Key Generation------------------------
 # --hex to binary
 key = hex2bin(key)
 
 # getting 56 bit key from 64 bit using the parity bits
 key = permute(key, keyp, 56)
 # Splitting
-left = key[0:28]  # rkb for RoundKeys in binary
-right = key[28:56]  # rk for RoundKeys in hexadecimal
+left = key[0:28]
+right = key[28:56]
 
-rkb = []
-rk = []
-for i in range(0, 16):
-    # Shifting the bits by nth shifts by checking from shift table
-    left = shift_left(left, shift_table[i])
-    right = shift_left(right, shift_table[i])
+rkb = []  # rkb for RoundKeys in binary
+rk = []  # rk for RoundKeys in hexadecimal
 
-    # Combination of left and right string
-    combine_str = left + right
+# Shifting the bits by nth shifts by checking from shift table
+left = shift_left(left, shift_table[0])
+right = shift_left(right, shift_table[0])
 
-    # Compression of key from 56 to 48 bits
-    round_key = permute(combine_str, key_comp, 48)
+# Combination of left and right string
+combine_str = left + right
 
-    rkb.append(round_key)
-    rk.append(bin2hex(round_key))
+# Compression of key from 56 to 48 bits
+round_key = permute(combine_str, key_comp, 48)
+
+rkb.append(round_key)
+rk.append(bin2hex(round_key))
+# End of Key Generation------------------------
+
 
 text = input("Enter some text: ")
 pt1 = pad_text(text)
@@ -319,13 +318,13 @@ pt = text_to_hex(pt1).upper()
 print("Initial Plain Text : ", pt)
 pts = split_text(pt)
 
-print("Encryption:\n--------------------")
+print("---------------------------------------\nEncryption:")
 cipher_text = ""
 for str in pts:
     cipher_text += bin2hex(encrypt(str, rkb, rk))
-print("Final Cipher Text : ", cipher_text + '\n\n')
+print("Final Cipher Text : ", cipher_text + '\n---------------------------------------')
 
-print("Decryption:\n--------------------")
+print("Decryption:")
 decrypted_text = ""
 for ct in split_text(cipher_text):
     decrypted_text += bin2hex(encrypt(ct, rkb, rk))
