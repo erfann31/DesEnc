@@ -1,3 +1,4 @@
+
 # Hexadecimal to binary conversion
 def hex2bin(s):
     mp = {'0': "0000",
@@ -284,14 +285,67 @@ def encrypt(pt, rkb):
 
 
 
+def reverse(cipher_text, plain_text):
+    plain_text =  hex2bin(plain_text)
+    cipher_text =  hex2bin(cipher_text)
+    combineCipher =  permute(cipher_text,  initial_perm, 64)
+    leftCipher = combineCipher[:32]
+
+    combinePlain =  permute(plain_text,  initial_perm, 64)
+    leftPlain = combinePlain[:32]
+
+    return  xor(leftCipher, leftPlain)
+
+
+def direct(pt, rkb):
+    pt =  hex2bin(pt)
+
+    # Initial Permutation
+    pt =  permute(pt,  initial_perm, 64)
+
+    # Splitting
+    left = pt[0:32]
+    right = pt[32:64]
+    #  Expansion P-box: Expanding the 32 bits data into 48 bits
+    right_expanded =  permute(right,  exp_p, 48)
+
+    # XOR RoundKey[i] and right_expanded
+    xor_x =  xor(right_expanded, rkb[0])
+
+    # S-boxex: substituting the value from s-box table by calculating row and column
+    sbox_str = ""
+    for j in range(0, 8):
+        row =  bin2dec(int(xor_x[j * 6] + xor_x[j * 6 + 5]))
+        col =  bin2dec(
+            int(xor_x[j * 6 + 1] + xor_x[j * 6 + 2] + xor_x[j * 6 + 3] + xor_x[j * 6 + 4]))
+        val =  sbox[j][row][col]
+        sbox_str = sbox_str +  dec2bin(val)
+    return sbox_str
+
+
+def find_arr(k, permutation):
+    n = len(k)
+    arr = [-1] * n
+    for i in range(n):
+        index = 0
+        for j in range(n):
+            if permutation[j] == k[i] and arr[j] == -1:
+                index = j
+                arr[j] = i + 1
+                break
+        if arr[index] == -1:
+            arr[index] = i + 1
+    return arr
+
+
 key = "4355262724562343"
 
 # Key Generation------------------------
 # --hex to binary
-key = hex2bin(key)
+key =  hex2bin(key)
 
 # getting 56 bit key from 64 bit using the parity bits
-key = permute(key, keyp, 56)
+key =  permute(key,  keyp, 56)
 # Splitting
 left = key[0:28]
 right = key[28:56]
@@ -300,23 +354,41 @@ rkb = []  # rkb for RoundKeys in binary
 rk = []  # rk for RoundKeys in hexadecimal
 
 # Shifting the bits by nth shifts by checking from shift table
-left = shift_left(left, shift_table[0])
-right = shift_left(right, shift_table[0])
+left =  shift_left(left,  shift_table[0])
+right =  shift_left(right,  shift_table[0])
 
 # Combination of left and right string
 combine_str = left + right
 
 # Compression of key from 56 to 48 bits
-round_key = permute(combine_str, key_comp, 48)
+round_key =  permute(combine_str,  key_comp, 48)
 
 rkb.append(round_key)
-rk.append(bin2hex(round_key))
+rk.append( bin2hex(round_key))
 # End of Key Generation------------------------
+plain = input("Enter some text: ")
+cipher = input("Enter some text: ")
+
+pt1 =  pad_text(plain)
+pt =  text_to_hex(pt1).upper()
+# pt = ""
 
 
-cipher_text = input()
+print("Initial Plain Text : ", pt)
+pts =  split_text(pt)
+
+print("---------------------------------------\nEncryption:")
+cipher_text = ""
+for str in pts:
+    cipher_text += bin2hex(encrypt(str, rkb))
+    # print(reverse(cipher, str))
+    # print(direct(str, rkb))
+    # print(find_arr(direct(str, rkb), reverse(cipher, str)))
+print("Final Cipher Text : ", cipher_text + '\n---------------------------------------')
+# cipher_text = "59346E29456A723B62354B61756D44257871650320277C741D1C0D0C4959590D"
+print("Decryption:")
 decrypted_text = ""
-for ct in split_text(cipher_text):
-    decrypted_text += bin2hex(encrypt(ct, rkb))
+for ct in  split_text(cipher_text):
+    decrypted_text +=  bin2hex( encrypt(ct, rkb))
 
-print(hex_to_ascii(decrypted_text))
+print("Final Decrypted Text : ", decrypted_text + '\nFinal Plain Text : ',  hex_to_ascii(decrypted_text))
