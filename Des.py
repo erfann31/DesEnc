@@ -284,6 +284,19 @@ def encrypt(pt, rkb, rk):
     return cipher_text
 
 
+def reverseEncrypt(cipher_text, plain_text):
+    combineCipher = permute(cipher_text, initial_perm, 64)
+    leftCipher = combineCipher[:32]
+    rightCipher = combineCipher[32:]
+
+    combinePlain = permute(plain_text, initial_perm, 64)
+    leftPlain = combinePlain[:32]
+    rightPlain = combinePlain[32:]
+
+    result = xor(leftCipher, leftPlain)
+
+
+
 key = "4355262724562343"
 
 # Key generation
