@@ -281,7 +281,7 @@ def encrypt(pt, rkb, rk):
     return cipher_text
 
 
-def reverseEncrypt(cipher_text, plain_text):
+def reverse(cipher_text, plain_text):
     combineCipher = permute(cipher_text, initial_perm, 64)
     leftCipher = combineCipher[:32]
     rightCipher = combineCipher[32:]
@@ -292,6 +292,13 @@ def reverseEncrypt(cipher_text, plain_text):
 
     result = xor(leftCipher, leftPlain)
 
+
+def find_arr(k, permutation):
+    arr = []
+    for i in range(len(permutation)):
+        idx = k.index(permutation[i])
+        arr.append(idx + 1)
+    return arr
 
 
 key = "4355262724562343"
