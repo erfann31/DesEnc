@@ -293,7 +293,6 @@ left = key[0:28]
 right = key[28:56]
 
 rkb = []  # rkb for RoundKeys in binary
-rk = []  # rk for RoundKeys in hexadecimal
 
 # Shifting the bits by nth shifts by checking from shift table
 left = shift_left(left, shift_table[0])
@@ -306,7 +305,6 @@ combine_str = left + right
 round_key = permute(combine_str, key_comp, 48)
 
 rkb.append(round_key)
-rk.append(bin2hex(round_key))
 # End of Key Generation------------------------
 
 

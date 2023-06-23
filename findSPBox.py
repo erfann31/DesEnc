@@ -163,16 +163,6 @@ exp_p = [32, 1, 2, 3, 4, 5, 4, 5,
          22, 23, 24, 25, 24, 25, 26, 27,
          28, 29, 28, 29, 30, 31, 32, 1]
 
-# Straight P-box Table
-str_p = [6, 26, 20, 28,
-         29, 12, 21, 17,
-         31, 15, 23, 10,
-         5, 18, 1, 16,
-         3, 8, 24, 14,
-         19, 27, 2, 9,
-         32, 13, 30, 4,
-         11, 22, 25, 7]
-
 # S-box Table
 sbox = [[[14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7],
          [0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8],
@@ -251,48 +241,10 @@ key_comp = [14, 17, 11, 24, 1, 5,
             46, 42, 50, 36, 29, 32]
 
 
-def encrypt(pt, rkb):
-    pt = hex2bin(pt)
-
-    # Initial Permutation
-    pt = permute(pt, initial_perm, 64)
-
-    # Splitting
-    left = pt[0:32]
-    right = pt[32:64]
-    #  Expansion P-box: Expanding the 32 bits data into 48 bits
-    right_expanded = permute(right, exp_p, 48)
-
-    # XOR RoundKey[i] and right_expanded
-    xor_x = xor(right_expanded, rkb[0])
-
-    # S-boxex: substituting the value from s-box table by calculating row and column
-    sbox_str = ""
-    for j in range(0, 8):
-        row = bin2dec(int(xor_x[j * 6] + xor_x[j * 6 + 5]))
-        col = bin2dec(
-            int(xor_x[j * 6 + 1] + xor_x[j * 6 + 2] + xor_x[j * 6 + 3] + xor_x[j * 6 + 4]))
-        val = sbox[j][row][col]
-        sbox_str = sbox_str + dec2bin(val)
-
-    # Straight P-box: After substituting rearranging the bits
-    sbox_str = permute(sbox_str, str_p, 32)
-
-    # XOR left and sbox_str
-    result = xor(left, sbox_str)
-    left = result
-
-    # Combination
-    combine = left + right
-
-    # Final permutation: final rearranging of bits to get cipher text
-    cipher_text = permute(combine, final_perm, 64)
-    return cipher_text
-
-
 def reverse(cipher_text, plain_text):
     plain_text = hex2bin(plain_text)
     cipher_text = hex2bin(cipher_text)
+
     combineCipher = permute(cipher_text, initial_perm, 64)
     leftCipher = combineCipher[:32]
 
@@ -309,7 +261,6 @@ def direct(pt, rkb):
     pt = permute(pt, initial_perm, 64)
 
     # Splitting
-    left = pt[0:32]
     right = pt[32:64]
     #  Expansion P-box: Expanding the 32 bits data into 48 bits
     right_expanded = permute(right, exp_p, 48)
@@ -356,7 +307,6 @@ left = key[0:28]
 right = key[28:56]
 
 rkb = []  # rkb for RoundKeys in binary
-rk = []  # rk for RoundKeys in hexadecimal
 
 # Shifting the bits by nth shifts by checking from shift table
 left = shift_left(left, shift_table[0])
@@ -369,7 +319,6 @@ combine_str = left + right
 round_key = permute(combine_str, key_comp, 48)
 
 rkb.append(round_key)
-rk.append(bin2hex(round_key))
 # End of Key Generation------------------------
 data = {
     "kootahe": "6E2F7B25307C3144",
@@ -404,5 +353,5 @@ for key, value in data.items():
     for str in pts:
         print("Input of StrPBox:", direct(str, rkb))
         print("Output of StrPBox:", reverse(cipher, str))
-        print("Possible answer:")
+        print("\nPossible answer is:")
         print(find_arr(direct(str, rkb), reverse(cipher, str)))
