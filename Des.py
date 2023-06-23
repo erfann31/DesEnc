@@ -126,12 +126,9 @@ def split_text(text):
 
 # Permute function to rearrange the bits
 def permute(k, arr, n):
-    # print("0\n"+k)
-    # print(arr)
     permutation = ""
     for i in range(0, n):
         permutation = permutation + k[arr[i] - 1]
-    # print(permutation)
     return permutation
 
 
@@ -314,4 +311,3 @@ for i in range(0, 3):
     text += hex_to_ascii(bin2hex(encrypt(split_text(cipher_text)[i], rkb)))
 
 print(text)
-# print(len(text))
